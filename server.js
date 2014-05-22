@@ -10,13 +10,15 @@ var App = function(){
   var self = this;
 
   // Setup
-  self.dbServer = new mongodb.Server(process.env.OPENSHIFT_MONGODB_DB_HOST,parseInt(process.env.OPENSHIFT_MONGODB_DB_PORT));
+  var mongoHost = process.env.OPENSHIFT_MONGODB_DB_HOST || '127.0.0.1';
+  var mongoPort = parseInt(process.env.OPENSHIFT_MONGODB_DB_PORT) || 27017;
+  self.dbServer = new mongodb.Server(mongoHost, mongoPort);
   self.db = new mongodb.Db(process.env.OPENSHIFT_APP_NAME, self.dbServer, {auto_reconnect: true});
   self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME;
   self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD;
 
-  self.ipaddr  = process.env.OPENSHIFT_NODEJS_IP;
-  self.port    = parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
+  self.ipaddr  = '127.0.0.1'; //process.env.OPENSHIFT_NODEJS_IP;
+  self.port    = 3000; //parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
   if (typeof self.ipaddr === "undefined") {
     console.warn('No OPENSHIFT_NODEJS_IP environment variable');
   };
@@ -25,7 +27,7 @@ var App = function(){
   // Web app logic
   self.routes = {};
   self.routes['health'] = function(req, res){ res.send('1'); };
-  
+
   //self.routes['root'] = function(req, res){res.send('You have come to the park apps web service. All the web services are at /ws/parks*. For example /ws/parks will return all the parks in the system in a JSON payload. Thanks for stopping by and have a nice day'); };
 
   //returns all the parks in the collection
@@ -82,7 +84,7 @@ var App = function(){
          res.end('success');
      };
   };
-  
+
   self.routes['within'] = function(req, res){
       var lat1 = parseFloat(req.query.lat1);
       var lon1 = parseFloat(req.query.lon1);
@@ -99,10 +101,10 @@ var App = function(){
 
 
   // Web app urls
-  
+
   self.app  = express();
   self.app.use(express.compress());
-  
+
   // Serve up content from public directory
   self.app.use(express.static(__dirname + '/public'));
 
@@ -137,8 +139,8 @@ var App = function(){
       });
     });
   };
-  
-  
+
+
   //starting the nodejs server with express
   self.startServer = function(){
     self.app.listen(self.port, self.ipaddr, function(){
