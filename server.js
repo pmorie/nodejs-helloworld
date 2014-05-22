@@ -13,9 +13,11 @@ var App = function(){
   var mongoHost = process.env.OPENSHIFT_MONGODB_DB_HOST || '127.0.0.1';
   var mongoPort = parseInt(process.env.OPENSHIFT_MONGODB_DB_PORT) || 27017;
   self.dbServer = new mongodb.Server(mongoHost, mongoPort);
-  self.db = new mongodb.Db(process.env.OPENSHIFT_APP_NAME, self.dbServer, {auto_reconnect: true});
-  self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME;
-  self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD;
+
+  var dbName = process.env.OPENSHIFT_APP_NAME || 'fluent';
+  self.db = new mongodb.Db(dbName, self.dbServer, {auto_reconnect: true});
+  self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME || 'mongo';
+  self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD || 'mongo';
 
   self.ipaddr  = '127.0.0.1'; //process.env.OPENSHIFT_NODEJS_IP;
   self.port    = 3000; //parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
