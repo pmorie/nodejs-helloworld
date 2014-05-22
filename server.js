@@ -16,8 +16,8 @@ var App = function(){
 
   var dbName = process.env.OPENSHIFT_APP_NAME || 'fluent';
   self.db = new mongodb.Db(dbName, self.dbServer, {auto_reconnect: true});
-  self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME || 'mongo';
-  self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD || 'mongo';
+  self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME;
+  self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD;
 
   self.ipaddr  = '127.0.0.1'; //process.env.OPENSHIFT_NODEJS_IP;
   self.port    = 3000; //parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
@@ -135,10 +135,12 @@ var App = function(){
   self.connectDb = function(callback){
     self.db.open(function(err, db){
       if(err){ throw err };
-      self.db.authenticate(self.dbUser, self.dbPass, {authdb: "admin"}, function(err, res){
-        if(err){ throw err };
-        callback();
-      });
+      if(self.dbUser && self.dbPass) {
+        self.db.authenticate(self.dbUser, self.dbPass, {authdb: "admin"}, function(err, res){
+          if(err){ throw err };
+          callback();
+        });
+      }
     });
   };
 
