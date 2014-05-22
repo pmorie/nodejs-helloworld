@@ -5,7 +5,6 @@ var fs      = require('fs');
 var mongodb = require('mongodb');
 
 var App = function(){
-
   // Scope
   var self = this;
 
@@ -140,6 +139,8 @@ var App = function(){
           if(err){ throw err };
           callback();
         });
+      } else {
+        callback();
       }
     });
   };
