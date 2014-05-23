@@ -11,10 +11,10 @@ var App = function(){
   // Setup
   var mongoHost = process.env.OPENSHIFT_MONGODB_DB_HOST || '127.0.0.1';
   var mongoPort = parseInt(process.env.OPENSHIFT_MONGODB_DB_PORT) || 27017;
-  self.dbServer = new mongodb.Server(mongoHost, mongoPort);
+  self.dbServer = new mongodb.Server(mongoHost, mongoPort, {auto_reconnect: true});
 
   var dbName = process.env.OPENSHIFT_APP_NAME || 'fluent';
-  self.db = new mongodb.Db(dbName, self.dbServer, {auto_reconnect: true});
+  self.db = new mongodb.Db(dbName, self.dbServer);
   self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME;
   self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD;
 
@@ -130,12 +130,20 @@ var App = function(){
 
   // Logic to open a database connection. We are going to call this outside of app so it is available to all our functions inside.
 
+  var retries = 0;
   self.connectDb = function(callback){
     self.db.open(function(err, db){
-      if(err){ throw err };
+      if(err){
+        retries += 1;
+        if(retries > 4) {
+          throw err;
+        }
+        setTimeout(function() {self.connectDb(callback);}, 1000*retries);
+        return;
+      }
       if(self.dbUser && self.dbPass) {
         self.db.authenticate(self.dbUser, self.dbPass, {authdb: "admin"}, function(err, res){
-          if(err){ throw err };
+          if(err){ throw err; }
           callback();
         });
       } else {
@@ -150,14 +158,14 @@ var App = function(){
     self.app.listen(self.port, self.ipaddr, function(){
       console.log('%s: Node server started on %s:%d ...', Date(Date.now()), self.ipaddr, self.port);
     });
-  }
+  };
 
   // Destructors
   self.terminator = function(sig) {
     if (typeof sig === "string") {
       console.log('%s: Received %s - terminating Node server ...', Date(Date.now()), sig);
       process.exit(1);
-    };
+    }
     console.log('%s: Node server stopped.', Date(Date.now()) );
   };
 
