@@ -18,12 +18,11 @@ var App = function(){
   self.dbUser = process.env.OPENSHIFT_MONGODB_DB_USERNAME;
   self.dbPass = process.env.OPENSHIFT_MONGODB_DB_PASSWORD;
 
-  self.ipaddr  = '127.0.0.1'; //process.env.OPENSHIFT_NODEJS_IP;
-  self.port    = 3000; //parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 8080;
+  self.ipaddr  = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
+  self.port    = parseInt(process.env.OPENSHIFT_NODEJS_PORT) || 3000;
   if (typeof self.ipaddr === "undefined") {
     console.warn('No OPENSHIFT_NODEJS_IP environment variable');
-  };
-
+  }
 
   // Web app logic
   self.routes = {};
